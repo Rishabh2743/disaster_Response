@@ -1,0 +1,300 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Disaster Response Coordination API",
+    "version": "1.0.0",
+    "description": "API documentation for the Disaster Response Coordination Platform"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000"
+    }
+  ],
+  "paths": {
+    "/api/disasters": {
+      "get": {
+        "summary": "Get all disasters (filterable by tag)",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tag",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter disasters by tag (e.g., flood)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of disasters"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new disaster",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Disaster"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Disaster created"
+          }
+        }
+      }
+    },
+    "/api/disasters/{id}": {
+      "put": {
+        "summary": "Update a disaster",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Disaster"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Disaster updated"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a disaster",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Disaster deleted"
+          }
+        }
+      }
+    },
+    "/api/disasters/{id}/social-media": {
+      "get": {
+        "summary": "Get social media reports for a disaster",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of social media reports"
+          }
+        }
+      }
+    },
+    "/api/disasters/{id}/resources": {
+      "get": {
+        "summary": "Get nearby resources for a disaster",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lat",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "float"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lon",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "float"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Nearby resources"
+          }
+        }
+      }
+    },
+    "/api/disasters/{id}/official-updates": {
+      "get": {
+        "summary": "Fetch official updates for a disaster",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Official updates fetched"
+          }
+        }
+      }
+    },
+    "/api/disasters/{id}/verify-image": {
+      "post": {
+        "summary": "Verify disaster image using Gemini",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image_url": {
+                    "type": "string"
+                  }
+                },
+                "required": ["image_url"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Image verification result"
+          }
+        }
+      }
+    },
+    "/api/geocode/description": {
+      "post": {
+        "summary": "Extract and geocode location from description using Gemini",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string"
+                  }
+                },
+                "required": ["description"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Location extracted and geocoded"
+          }
+        }
+      }
+    },
+    "/api/geocode/location": {
+      "get": {
+        "summary": "Convert location name to WKT coordinates",
+        "description": "Takes a human-readable location name and returns its WKT (Well-Known Text) POINT format using OpenStreetMap Nominatim API.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "location_name",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "New York City"
+            },
+            "description": "The name of the location to geocode"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "WKT point generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "location_name": { "type": "string" },
+                    "wkt": { "type": "string", "example": "POINT(-74.006 40.7128)" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Missing location_name or invalid input" },
+          "404": { "description": "Location not found" },
+          "500": { "description": "Geocoding service error" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Disaster": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "location_name": { "type": "string" },
+          "location": {
+            "type": "string",
+            "description": "WKT or lat/lng coordinates as string"
+          },
+          "description": { "type": "string" },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "owner_id": { "type": "string" }
+        },
+        "required": ["title", "description", "tags", "owner_id"]
+      }
+    }
+  }
+}
